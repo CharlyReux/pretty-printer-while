@@ -1,0 +1,69 @@
+grammar pret.MyDsl with org.eclipse.xtext.common.Terminals
+
+generate myDsl "http://www.MyDsl.pret"
+
+Model:
+    programme+=Program;
+
+Program :
+	func+= (Function)+
+;
+Function :
+	'function' fname = SYMBOL ":" fdef = Definition
+;
+Definition:
+	'read' defInput = Input RCHARIOT* '%' RCHARIOT* defCommands = Commands RCHARIOT* '%' 'write' defOutput = Output
+;
+
+Input:
+	vai+=VARIABLE (','vai+=VARIABLE)*
+;
+Output:
+	vao+=VARIABLE (','vao+=VARIABLE)*
+;
+
+Commands:
+	LCommand+=Command (';' LCommand+=Command)*;
+	
+Command:
+	eq=Equal|if=If|wh=While|fo=For|fore=Foreach| no='nop'
+;
+Equal:
+	(vars=Vars ':=' exp=Exprs)
+;
+If:
+	('if' exp=Expression 'then' RCHARIOT* iflc=Commands (RCHARIOT* 'else' ellc=Commands)? RCHARIOT* 'fi')
+;
+While:
+	('while' exp=Expression 'do' RCHARIOT* whcom=Commands RCHARIOT* 'od')
+;
+For:
+	('for' exp=Expression 'do' RCHARIOT* focom=Commands RCHARIOT* 'od')
+;
+Foreach:
+	'foreach' forevar=VARIABLE 'in' exp=Expression 'do' RCHARIOT* forecom=Commands RCHARIOT* 'od'
+;
+
+Vars:
+	lvars+=VARIABLE (',' lvars+=VARIABLE)*
+;
+Exprs:
+	lexpr+=Expression (',' lexpr+=Expression)*
+;
+Expression:
+	expbg=ExprBase ('=?' expbd=ExprBase)?
+;
+ExprBase:
+ {ExprBase} ni='nil'|v=VARIABLE| sy=SYMBOL|ebt=EBtl|ebl=EBlist|ebc=EBcons|ebh=EBhd|ebs=EBsy;
+
+EBsy:'(' sy=SYMBOL le=LExpr ')';
+EBhd:'(' 'hd' expb=ExprBase')';
+EBtl:'(' 'tl' expb=ExprBase')';
+EBcons:{EBcons} '(' 'cons' lexpb+=ExprBase* ')';
+EBlist:'(' 'list' le=LExpr ')';
+
+LExpr:Lexpb+=ExprBase Lexpb+=ExprBase*;
+
+terminal SYMBOL:('a'..'z')(('a'..'z')|('A'..'Z')|('0'..'9'))*('!'|'?')?;
+terminal VARIABLE:('A'..'Z')(('a'..'z')|('A'..'Z')|('0'..'9'))*('!'|'?')?;
+terminal RCHARIOT:('\n');
