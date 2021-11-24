@@ -1,0 +1,40 @@
+NAME
+    whpp
+
+SYNOPSIS: 
+    whpp FILE [OPTION]...
+    whpp -t
+    whpp -h
+
+DESCRIPTION
+    Pretty print FILE. FILE content must be in WHILE language and format '.wh'.
+    If 'indentation' is specified, changes the size of the indentation in the new file, if not, the size is 2 by default.
+
+OPTIONS:
+    -t, --test     
+          Run the test program
+    -h, --help     
+          Display this help and exit
+    -all           
+          Change the size of the indentation for all structures in the file. Default is 2.
+    -if            
+          Change the size of the indentation in 'if' structures. Default is 2.
+    -while         
+          Change the size of the indentation in 'while' structures. Default is 2.
+    -for           
+          Change the size of the indentation in 'for' structures. Default is 2.
+    -foreach       
+          Change the size of the indentation in 'foreach' structures. Default is 2.
+    -else          
+          Change the size of the indentation in 'else' structures. Default is 2.
+    -o             
+          Name of the output file. Default is FILE.
+
+INDENTATION:
+    Integer following options which change the indentation size
+
+EXAMPLE:
+    whpp test.wh -if 5 -foreach 1 -o test2.wh
+
+AUTHORS
+    Written by Charly Reux, Clément Bourdonnec, Baptiste Sourisseau, Matilin Thomas, Briag Le Brun, Nicolas Ronceray.

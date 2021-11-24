@@ -1,0 +1,6 @@
+function tury: 
+read X
+%
+  nop
+%
+write Y

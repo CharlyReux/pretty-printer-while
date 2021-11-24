@@ -1,0 +1,2 @@
+function testif! : read In1!, In2! % if In1 =? In2 
+then Out1? := In1! ; Out2? := In2! fi % write Out1?, Out2?

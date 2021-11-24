@@ -1,0 +1,6 @@
+function testcons: 
+read X
+%
+  X := (cons)
+%
+write X

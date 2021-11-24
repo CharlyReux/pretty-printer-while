@@ -1,0 +1,189 @@
+#!/bin/bash
+
+# INITIALISATION DES VARIABLES PRINCIPALES
+
+isNumber='^[0-9]+$'
+cpt=1
+cheminWhileInitial=$PWD/input_files
+cheminWhilePPAttendu=$PWD/expected_output_files
+nb_files=$(find "$cheminWhileInitial" -maxdepth 1 -type f -printf . | wc -c)
+success=0
+fail=0
+allident=2
+ifident=-1
+whileident=-1
+forident=-1
+foreachident=-1
+elseident=-1
+name=""
+
+
+#Fonction appelée sur l'option de lancement simple sur un fichier indiqué
+# @param $1 : le chemin du fichier à lancer sur le générateur
+simpleLaunch(){
+	if [ $# -eq 1 ];then
+		#Lancement du générateur sur le fichier entré en parametres
+		echo 
+		java -jar ./bin/generator.jar $1 > bin/generatedMessage
+		gm=`cat bin/generatedMessage | wc -l`
+		if [ $gm -eq 1 ]; then
+			genfile=`basename $1`
+			genfile=${genfile%.*}
+			genfile="$PWD/generatedFiles/$genfile.wh"
+			echo "Fichier disponible sous : $genfile"
+			echo 
+		else
+			echo "Erreur generation (voir bin/generatedMessage)"
+			cat bin/help.txt
+		fi 
+	elif [ $# -eq 2 ];then
+		#Lancement du générateur sur le fichier entré en parametres
+		echo 
+		java -jar ./bin/generator.jar $1 $2 > bin/generatedMessage
+		gm=`cat bin/generatedMessage | wc -l`
+		if [ $gm -eq 1 ]; then
+			genfile=`basename $1`
+			genfile=${genfile%.*}
+			genfile="$PWD/generatedFiles/$genfile.wh"
+			echo "Fichier disponible sous : $genfile"
+			echo
+		else
+			echo "Erreur generation (voir bin/generatedMessage)"
+			cat bin/help.txt
+		fi 
+	fi
+}
+
+#Fonction appelée sur l'option de lancement du mode de test
+testLaunch(){
+	
+#	echo
+#	echo "Lancement des tests"
+#	echo
+#	echo "-------------------------"
+#	echo
+	
+	#On parcours tous les fichiers de tests disponibles
+	for i in "$cheminWhileInitial"/*; do
+
+		#Récupération des noms des fichiers de test (Sans l'extension)
+		fileInit=`basename $i`
+		fileInitWOE="${fileInit%.*}"
+
+		#On test si il y a bien ce fichier de test
+		if [ -e expected_output_files/$fileInit ]; then 
+
+			#Lancement du script de génération
+#			echo "Test $cpt/$nb_files"
+			cpt=$((cpt + 1))
+			java -jar ./bin/generator.jar $i
+#			echo 
+
+			#On vérifie si les fichiers obtenus en sortie du générateur corresponds à celui attendu
+			if diff -c ./expected_output_files/$fileInit ./generatedFiles/$fileInit; then
+#				echo 'Réussi'
+				success=$((success + 1))
+			else
+#				echo 'Raté'
+#				diff -c diff -c ./expected_output_files/$fileInit ./generatedFiles/$fileInit
+				fail=$((fail + 1))
+			fi
+#			echo
+#			echo "-------------------------"
+#			echo
+		fi
+	done
+#	echo "Tests Réussis : $success"
+#	echo "Tests Ratés : $fail"
+#	echo "Sur un total de $nb_files Tests"
+	if [ $nb_files -eq $success ]
+	then
+		echo "Tests Réussis"
+	else
+		echo
+		echo "Tests Ratés"
+		echo
+	fi
+	python3 bin/testPerf.py
+	echo "Test de performance terminé"
+}
+
+###########################################################################
+############################  SCRIPT PRINCIPAL ############################
+###########################################################################
+
+#Si il n'y a aucun parametres d'entré, on affiche la documentation
+if [ $# -eq 0 ]; then
+	cat bin/help.txt
+else
+	#Lancement du mode de test
+	if [ $1 == '-t' ];then  
+		testLaunch
+	elif [ $1 == '--test' ]; then
+		testLaunch
+	#Affichage de la documentation
+	elif [ $1 == '--help' ];then
+		cat bin/help.txt
+	elif [ $1 == '-h' ]; then
+		cat bin/help.txt
+	#Lancement du mode de lancement simple sur un fichier entré
+	elif [ $# -eq 1 ] && [ -e $1 ]; then
+		simpleLaunch $1
+	#Lancement du mode de lancement simple mais avec des parametres
+	elif [ $# > 2 ]; then
+		name=`basename $1`
+		#On parcours tous les arguments par indices
+		for i in `seq 2 $#`; do
+			if [[ "$i" =~ ^(2|4|6|8|10|12)$ ]]; then
+				case ${!i} in
+					-all)
+						tmp=${i}
+						let tmp=tmp+1
+						allident=${!tmp}
+						;;
+					-if)
+						tmp=${i}
+						let tmp=tmp+1
+						ifident=${!tmp}
+						;;
+					-while)
+						tmp=${i}
+						let tmp=tmp+1
+						whileident=${!tmp}
+						;;
+					-for)
+						tmp=${i}
+						let tmp=tmp+1
+						forident=${!tmp}
+						;;
+					-foreach)
+						tmp=${i}
+						let tmp=tmp+1
+						foreachident=${!tmp}
+						;;
+					-else)
+						tmp=${i}
+						let tmp=tmp+1
+						elseident=${!tmp}
+						;;
+					-o)
+						tmp=${i}
+						let tmp=tmp+1
+						name=${!tmp}
+						;;
+					*)
+						cat bin/help.txt
+						;;
+				esac
+			fi
+		done
+		if [ -f $1 ]; then
+			java -jar ./bin/generator.jar $1 $name $allident $ifident $whileident $forident $foreachident $elseident
+		else
+			echo "Erreur : le fichier n'existe pas"
+		fi
+	else
+		cat bin/help.txt
+	fi
+fi
+

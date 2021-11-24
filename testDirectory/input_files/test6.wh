@@ -1,0 +1,9 @@
+function testwhile! : read In1!, In2! 
+%
+while (cons In!) =? (list In2!) do
+	Out1? := In1! 
+	;
+	Out2? := In2! 
+od
+% 
+write Out1?, Out2?

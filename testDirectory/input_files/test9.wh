@@ -1,0 +1,9 @@
+function testfor! : 
+read In1!, In2! 
+% 
+for (hd I!) do 
+	Out1? := I!;
+	Out2? := I! 
+od 
+% 
+write Out1?, Out2?

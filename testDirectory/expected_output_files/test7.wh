@@ -1,0 +1,9 @@
+function testforeach!: 
+read In1!, In2!
+%
+  foreach I! in (list In1!) do
+    Out1? := I! ;
+    Out2? := I!
+  od
+%
+write Out1?, Out2?
